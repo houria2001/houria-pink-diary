@@ -7,11 +7,35 @@ const loginStatus = document.querySelector('#login-status');
 const inboxStatus = document.querySelector('#inbox-status');
 const messageList = document.querySelector('#message-list');
 const loginButton = loginForm.querySelector('button[type="submit"]');
+const forgotView = document.querySelector('#forgot-view');
+const resetView = document.querySelector('#reset-view');
+const forgotForm = document.querySelector('#forgot-form');
+const resetForm = document.querySelector('#reset-form');
+const forgotStatus = document.querySelector('#forgot-status');
+const resetStatus = document.querySelector('#reset-status');
 
 function showLogin(message = '') {
   loginView.hidden = false;
+  forgotView.hidden = true;
+  resetView.hidden = true;
   dashboardView.hidden = true;
   loginStatus.textContent = message;
+}
+
+function showForgotPassword() {
+  loginView.hidden = true;
+  forgotView.hidden = false;
+  resetView.hidden = true;
+  dashboardView.hidden = true;
+  forgotStatus.textContent = '';
+}
+
+function showResetPassword() {
+  loginView.hidden = true;
+  forgotView.hidden = true;
+  resetView.hidden = false;
+  dashboardView.hidden = true;
+  resetStatus.textContent = '';
 }
 
 function showDashboard(user) {
@@ -110,7 +134,74 @@ loginForm.addEventListener('submit', async event => {
   }
 });
 
+document.querySelector('#forgot-password-button').addEventListener('click', showForgotPassword);
+document.querySelector('#forgot-back-button').addEventListener('click', () => showLogin());
+
 document.querySelector('#refresh-button').addEventListener('click', loadMessages);
+forgotForm.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  if (!forgotForm.reportValidity() || !supabase) return;
+
+  const email = String(new FormData(forgotForm).get('email') || '').trim();
+  const submitButton = forgotForm.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+  forgotStatus.textContent = 'Sending recovery email...';
+
+  try {
+    const redirectTo = `${location.origin}${location.pathname}`;
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+
+    if (error) throw error;
+
+    forgotStatus.textContent = 'If this email is registered, a recovery link has been sent. Please check your inbox.';
+  } catch (error) {
+    console.error('Password recovery request failed:', error);
+    forgotStatus.textContent = 'The recovery email could not be sent. Please try again later.';
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+
+resetForm.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  if (!resetForm.reportValidity() || !supabase) return;
+
+  const values = new FormData(resetForm);
+  const password = String(values.get('password') || '');
+  const confirmPassword = String(values.get('confirmPassword') || '');
+
+  if (password !== confirmPassword) {
+    resetStatus.textContent = 'The passwords do not match.';
+    return;
+  }
+
+  if (password.length < 8) {
+    resetStatus.textContent = 'The new password must be at least 8 characters.';
+    return;
+  }
+
+  const submitButton = resetForm.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+  resetStatus.textContent = 'Updating password...';
+
+  try {
+    const { error } = await supabase.auth.updateUser({ password });
+
+    if (error) throw error;
+
+    resetForm.reset();
+    await supabase.auth.signOut();
+    showLogin('Your password has been changed. Please sign in.');
+  } catch (error) {
+    console.error('Password update failed:', error);
+    resetStatus.textContent = 'Your password could not be changed. The recovery link may have expired.';
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+
 document.querySelector('#logout-button').addEventListener('click', async () => {
   const button = document.querySelector('#logout-button');
   button.disabled = true;
@@ -127,7 +218,9 @@ async function initializeAdmin() {
   }
 
   supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_OUT' || !session) {
+    if (event === 'PASSWORD_RECOVERY') {
+      showResetPassword();
+    } else if (event === 'SIGNED_OUT' || !session) {
       showLogin();
     } else if (event === 'SIGNED_IN') {
       showDashboard(session.user);
@@ -138,7 +231,9 @@ async function initializeAdmin() {
   if (error) {
     showLogin('Could not check your sign-in session. Please try again.');
   } else if (data.session) {
-    showDashboard(data.session.user);
+    const recoveryLink = location.hash.includes('type=recovery') || location.search.includes('type=recovery');
+    if (recoveryLink) showResetPassword();
+    else showDashboard(data.session.user);
   } else {
     showLogin();
   }

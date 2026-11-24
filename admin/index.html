@@ -27,8 +27,36 @@
         <input id="login-password" name="password" type="password" autocomplete="current-password" required>
         <button class="primary-button" type="submit">Sign in</button>
       </form>
+      <button class="text-button" id="forgot-password-button" type="button">Forgot password?</button>
       <p class="feedback" id="login-status" role="status" aria-live="polite"></p>
       <a class="back-link" href="../">← Back to the website</a>
+    </section>
+
+    <section class="panel login-panel" id="forgot-view" hidden aria-labelledby="forgot-title">
+      <p class="eyebrow">PASSWORD RECOVERY</p>
+      <h1 id="forgot-title">Reset your password.</h1>
+      <p class="intro">Enter the owner's email and we’ll send a secure recovery link.</p>
+      <form id="forgot-form">
+        <label for="forgot-email">Email</label>
+        <input id="forgot-email" name="email" type="email" autocomplete="email" required>
+        <button class="primary-button" type="submit">Send recovery email</button>
+      </form>
+      <p class="feedback" id="forgot-status" role="status" aria-live="polite"></p>
+      <button class="back-link text-button" id="forgot-back-button" type="button">← Back to sign in</button>
+    </section>
+
+    <section class="panel login-panel" id="reset-view" hidden aria-labelledby="reset-title">
+      <p class="eyebrow">NEW PASSWORD</p>
+      <h1 id="reset-title">Choose a new password.</h1>
+      <p class="intro">Enter a strong password for the owner account.</p>
+      <form id="reset-form">
+        <label for="new-password">New password</label>
+        <input id="new-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+        <label for="confirm-password">Confirm password</label>
+        <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" minlength="8" required>
+        <button class="primary-button" type="submit">Update password</button>
+      </form>
+      <p class="feedback" id="reset-status" role="status" aria-live="polite"></p>
     </section>
 
     <section class="inbox" id="dashboard-view" hidden aria-labelledby="inbox-title">
