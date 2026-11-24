@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#30272b">
+  <title>Owner inbox | Houria Pink Diary</title>
+  <link rel="stylesheet" href="admin.css">
+  <script type="module" src="admin.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="wordmark" href="../">Houria <span>Pink Diary</span></a>
+      <span class="private-label">OWNER INBOX</span>
+    </header>
+
+    <section class="panel login-panel" id="login-view" aria-labelledby="login-title">
+      <p class="eyebrow">PRIVATE AREA</p>
+      <h1 id="login-title">Welcome back.</h1>
+      <p class="intro">Sign in with the owner account to view your contact messages.</p>
+      <form id="login-form">
+        <label for="login-email">Email</label>
+        <input id="login-email" name="email" type="email" autocomplete="username" required>
+        <label for="login-password">Password</label>
+        <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+        <button class="primary-button" type="submit">Sign in</button>
+      </form>
+      <p class="feedback" id="login-status" role="status" aria-live="polite"></p>
+      <a class="back-link" href="../">← Back to the website</a>
+    </section>
+
+    <section class="inbox" id="dashboard-view" hidden aria-labelledby="inbox-title">
+      <div class="inbox-heading">
+        <div>
+          <p class="eyebrow">YOUR MESSAGES</p>
+          <h1 id="inbox-title">Contact inbox</h1>
+          <p class="intro" id="owner-email"></p>
+        </div>
+        <div class="toolbar">
+          <button class="secondary-button" id="refresh-button" type="button">Refresh</button>
+          <button class="secondary-button" id="logout-button" type="button">Log out</button>
+        </div>
+      </div>
+      <p class="feedback" id="inbox-status" role="status" aria-live="polite"></p>
+      <div class="message-list" id="message-list" aria-live="polite"></div>
+    </section>
+
+    <footer>Houria Pink Diary <span>·</span> Owner access</footer>
+  </main>
+</body>
+</html>

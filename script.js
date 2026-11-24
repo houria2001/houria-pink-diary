@@ -1,3 +1,5 @@
+import { isSupabaseConfigured, supabase } from './supabase-client.js';
+
 const menuButton = document.querySelector('.menu-button');
 const navLinks = document.querySelector('.nav-links');
 
@@ -70,9 +72,54 @@ document.querySelectorAll('.project-open').forEach(button => {
 const form = document.querySelector('#contact-form');
 form?.addEventListener('submit', event => {
   event.preventDefault();
-  const status = form.querySelector('.form-status');
-  status.textContent = 'Thank you — your note is ready to send.';
-  form.reset();
+  submitContactForm(form);
 });
 
 document.querySelector('#year').textContent = new Date().getFullYear();
+
+async function submitContactForm(form) {
+  const status = form.querySelector('.form-status');
+  const submitButton = form.querySelector('button[type="submit"]');
+
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  const values = new FormData(form);
+  const message = {
+    name: String(values.get('name') || '').trim(),
+    email: String(values.get('email') || '').trim(),
+    project_type: String(values.get('project') || '').trim(),
+    message: String(values.get('message') || '').trim()
+  };
+
+  if (!message.name || !message.email || !message.project_type || !message.message) {
+    status.textContent = 'Please complete every field before sending.';
+    return;
+  }
+
+  if (!isSupabaseConfigured || !supabase) {
+    status.textContent = 'The contact form is not connected yet. Please email hello@houriapinkdiary.com.';
+    return;
+  }
+
+  submitButton.disabled = true;
+  submitButton.setAttribute('aria-busy', 'true');
+  status.textContent = 'Sending your note...';
+
+  try {
+    const { error } = await supabase.from('messages').insert(message);
+
+    if (error) throw error;
+
+    form.reset();
+    status.textContent = 'Thank you — your note has been sent.';
+  } catch (error) {
+    console.error('Contact form submission failed:', error);
+    status.textContent = 'Your note could not be sent. Please try again or email hello@houriapinkdiary.com.';
+  } finally {
+    submitButton.disabled = false;
+    submitButton.removeAttribute('aria-busy');
+  }
+}

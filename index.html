@@ -235,8 +235,8 @@
           </div>
         </div>
         <form class="contact-form reveal" id="contact-form">
-          <label>Name<input type="text" name="name" placeholder="Your name" required></label>
-          <label>Email<input type="email" name="email" placeholder="your@email.com" required></label>
+          <label>Name<input type="text" name="name" placeholder="Your name" maxlength="120" required></label>
+          <label>Email<input type="email" name="email" placeholder="your@email.com" maxlength="254" required></label>
           <label>Project type
             <select name="project" required>
               <option value="">Choose a service</option>
@@ -246,7 +246,7 @@
               <option>Creative concept</option>
             </select>
           </label>
-          <label>Message<textarea name="message" rows="4" placeholder="Tell me about your idea..." required></textarea></label>
+          <label>Message<textarea name="message" rows="4" maxlength="10000" placeholder="Tell me about your idea..." required></textarea></label>
           <button class="button button-dark" type="submit">Send your note <span>↗</span></button>
           <p class="form-status" role="status"></p>
         </form>
@@ -262,6 +262,6 @@
     </div>
   </footer>
 
-  <script src="script.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
