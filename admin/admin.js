@@ -13,6 +13,20 @@ const forgotForm = document.querySelector('#forgot-form');
 const resetForm = document.querySelector('#reset-form');
 const forgotStatus = document.querySelector('#forgot-status');
 const resetStatus = document.querySelector('#reset-status');
+let recoveryInProgress = false;
+
+function hasRecoveryCallback() {
+  const hashParams = new URLSearchParams(location.hash.replace(/^#/, ''));
+  const queryParams = new URLSearchParams(location.search);
+  return hashParams.get('type') === 'recovery'
+    || queryParams.get('type') === 'recovery'
+    || Boolean(queryParams.get('code'));
+}
+
+function clearRecoveryCallback() {
+  const cleanUrl = `${location.origin}${location.pathname}`;
+  history.replaceState({}, document.title, cleanUrl);
+}
 
 function showLogin(message = '') {
   loginView.hidden = false;
@@ -193,7 +207,9 @@ resetForm.addEventListener('submit', async event => {
 
     resetForm.reset();
     await supabase.auth.signOut();
-    showLogin('Your password has been changed. Please sign in.');
+    recoveryInProgress = false;
+    clearRecoveryCallback();
+    showLogin('Your password has been changed successfully. Please sign in with your new password.');
   } catch (error) {
     console.error('Password update failed:', error);
     resetStatus.textContent = 'Your password could not be changed. The recovery link may have expired.';
@@ -219,7 +235,10 @@ async function initializeAdmin() {
 
   supabase.auth.onAuthStateChange((event, session) => {
     if (event === 'PASSWORD_RECOVERY') {
+      recoveryInProgress = true;
       showResetPassword();
+    } else if (recoveryInProgress) {
+      if (event === 'SIGNED_OUT' || !session) showLogin();
     } else if (event === 'SIGNED_OUT' || !session) {
       showLogin();
     } else if (event === 'SIGNED_IN') {
@@ -231,9 +250,16 @@ async function initializeAdmin() {
   if (error) {
     showLogin('Could not check your sign-in session. Please try again.');
   } else if (data.session) {
-    const recoveryLink = location.hash.includes('type=recovery') || location.search.includes('type=recovery');
-    if (recoveryLink) showResetPassword();
-    else showDashboard(data.session.user);
+    if (hasRecoveryCallback()) {
+      recoveryInProgress = true;
+      showResetPassword();
+    } else {
+      showDashboard(data.session.user);
+    }
+  } else if (hasRecoveryCallback()) {
+    recoveryInProgress = true;
+    resetStatus.textContent = 'The recovery link could not be verified. Please request a new link.';
+    showResetPassword();
   } else {
     showLogin();
   }
